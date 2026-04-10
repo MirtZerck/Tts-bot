@@ -5,18 +5,13 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Instalar dependencias del sistema necesarias para compilar módulos nativos
+# python3/make/g++ para módulos nativos (prism-media, opusscript)
 RUN apk add --no-cache python3 make g++
 
-# Copiar manifiestos primero (mejor cache de capas)
-# Se usa solo package.json porque no hay package-lock.json commiteado
-COPY package.json ./
-COPY tsconfig.json ./
+COPY package.json tsconfig.json ./
 
-# npm install genera el lockfile y instala todo (incluyendo devDependencies)
-RUN npm install
+RUN npm install --ignore-scripts
 
-# Copiar código fuente y compilar
 COPY src/ ./src/
 RUN npm run build
 
@@ -27,8 +22,6 @@ FROM node:20-alpine AS production
 
 WORKDIR /app
 
-# FFmpeg es requerido por @discordjs/voice para procesar audio
-# python3 y make son necesarios para compilar @discordjs/opus en tiempo de instalación
 RUN apk add --no-cache \
     ffmpeg \
     python3 \
@@ -36,21 +29,16 @@ RUN apk add --no-cache \
     g++ \
     && rm -rf /var/cache/apk/*
 
-# Copiar manifiestos e instalar SOLO dependencias de producción
 COPY package.json ./
-RUN npm install --omit=dev && npm cache clean --force
+RUN npm install --omit=dev --ignore-scripts && npm cache clean --force
 
-# Copiar el build compilado desde el stage anterior
 COPY --from=builder /app/dist ./dist
 
-# Usuario no-root por seguridad
 RUN addgroup -S botgroup && adduser -S botuser -G botgroup
 USER botuser
 
-# Directorio temporal para archivos de audio TTS (writable por botuser)
 VOLUME ["/tmp"]
 
-# Healthcheck: verifica que el proceso de Node sigue corriendo
 HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
     CMD pgrep -f "node dist/index.js" > /dev/null || exit 1
 
