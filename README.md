@@ -125,6 +125,86 @@ Usuario escribe en #general
 
 ---
 
+## 🐳 Deploy con Docker
+
+### Estructura de archivos Docker
+
+```
+discord-tts-bot/
+├── Dockerfile            ← Imagen producción (multi-stage)
+├── Dockerfile.dev        ← Imagen desarrollo con hot-reload
+├── docker-compose.yml    ← Orquestación de servicios
+├── .dockerignore         ← Excluye archivos del build context
+├── Makefile              ← Atajos de comandos
+└── .github/
+    └── workflows/
+        └── deploy.yml    ← CI/CD con GitHub Actions
+```
+
+### Deploy rápido
+
+```bash
+# 1. Copiar y configurar variables de entorno
+cp .env.example .env
+# Editar .env con tus credenciales
+
+# 2. Build + iniciar (usando Make)
+make deploy
+
+# 3. Ver logs
+make logs
+
+# 4. Registrar slash commands
+make register-commands
+```
+
+### Comandos Make disponibles
+
+| Comando              | Descripción                              |
+|----------------------|------------------------------------------|
+| `make deploy`        | Build + iniciar en producción            |
+| `make up`            | Iniciar (sin rebuild)                    |
+| `make down`          | Detener y eliminar contenedores          |
+| `make restart`       | Reiniciar el bot                         |
+| `make logs`          | Ver logs en tiempo real                  |
+| `make dev`           | Modo desarrollo con hot-reload           |
+| `make shell`         | Abrir shell dentro del contenedor        |
+| `make status`        | Ver estado y uso de recursos             |
+| `make clean`         | Limpiar imágenes y volúmenes             |
+
+### Sin Make (Docker Compose directo)
+
+```bash
+# Producción
+docker compose up -d --build
+
+# Desarrollo con hot-reload
+docker compose --profile dev up bot-dev
+
+# Logs
+docker compose logs -f bot
+
+# Detener
+docker compose down
+```
+
+### CI/CD con GitHub Actions
+
+El workflow `.github/workflows/deploy.yml` hace automáticamente:
+1. **TypeScript check** en cada PR
+2. **Build y push** de la imagen a GitHub Container Registry
+3. **Deploy SSH** al servidor cuando se hace merge a `main`
+
+Secrets necesarios en GitHub → Settings → Secrets:
+
+| Secret           | Descripción                        |
+|------------------|------------------------------------|
+| `SERVER_HOST`    | IP o dominio del servidor          |
+| `SERVER_USER`    | Usuario SSH                        |
+| `SERVER_SSH_KEY` | Clave privada SSH                  |
+
+---
+
 ## 🔧 Requisitos del sistema
 
 - **Node.js** ≥ 18

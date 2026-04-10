@@ -1,0 +1,25 @@
+# ============================================================
+# Dockerfile.dev — Imagen de desarrollo con hot-reload
+# Usa ts-node directamente, sin compilar
+# ============================================================
+FROM node:20-alpine
+
+WORKDIR /app
+
+RUN apk add --no-cache \
+    ffmpeg \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/cache/apk/*
+
+COPY package*.json ./
+COPY tsconfig.json ./
+
+# Instalar todas las dependencias (incluyendo devDependencies)
+RUN npm ci
+
+# El código fuente se monta como volumen desde docker-compose
+# No se copia aquí para permitir hot-reload
+
+CMD ["npx", "ts-node", "--transpile-only", "src/index.ts"]

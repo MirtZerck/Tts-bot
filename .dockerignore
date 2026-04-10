@@ -1,0 +1,47 @@
+# ============================================================
+# .dockerignore — Excluye archivos del contexto de build
+# Reduce tamaño del contexto y evita copiar secretos
+# ============================================================
+
+# Dependencias (se instalan dentro del contenedor)
+node_modules/
+
+# Output de compilación (se genera en el builder stage)
+dist/
+
+# Variables de entorno con secretos — NUNCA dentro de la imagen
+.env
+.env.local
+.env.*.local
+
+# Control de versiones
+.git/
+.gitignore
+
+# Docker (no se necesitan dentro del contenedor)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Tests
+coverage/
+*.test.ts
+*.spec.ts
+
+# Docs (no necesarias en producción)
+README.md
