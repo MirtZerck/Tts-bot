@@ -57,7 +57,7 @@ export class VoiceHandler {
     const connection = joinVoiceChannel({
       channelId: voiceChannel.id,
       guildId,
-      adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+      adapterCreator: voiceChannel.guild.voiceAdapterCreator as any,
       selfDeaf: false, // El bot necesita oír para saber si está en el canal
       selfMute: false,
     });
