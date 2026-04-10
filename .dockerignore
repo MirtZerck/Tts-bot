@@ -1,8 +1,3 @@
-# ============================================================
-# .dockerignore — Excluye archivos del contexto de build
-# Reduce tamaño del contexto y evita copiar secretos
-# ============================================================
-
 # Dependencias (se instalan dentro del contenedor)
 node_modules/
 
@@ -18,7 +13,7 @@ dist/
 .git/
 .gitignore
 
-# Docker (no se necesitan dentro del contenedor)
+# Docker
 Dockerfile*
 docker-compose*.yml
 .dockerignore
@@ -43,5 +38,5 @@ coverage/
 *.test.ts
 *.spec.ts
 
-# Docs (no necesarias en producción)
+# Docs
 README.md

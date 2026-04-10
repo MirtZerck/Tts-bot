@@ -9,11 +9,12 @@ WORKDIR /app
 RUN apk add --no-cache python3 make g++
 
 # Copiar manifiestos primero (mejor cache de capas)
-COPY package*.json ./
+# Se usa solo package.json porque no hay package-lock.json commiteado
+COPY package.json ./
 COPY tsconfig.json ./
 
-# Instalar TODAS las dependencias (incluyendo devDependencies para compilar)
-RUN npm ci
+# npm install genera el lockfile y instala todo (incluyendo devDependencies)
+RUN npm install
 
 # Copiar código fuente y compilar
 COPY src/ ./src/
@@ -36,8 +37,8 @@ RUN apk add --no-cache \
     && rm -rf /var/cache/apk/*
 
 # Copiar manifiestos e instalar SOLO dependencias de producción
-COPY package*.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+COPY package.json ./
+RUN npm install --omit=dev && npm cache clean --force
 
 # Copiar el build compilado desde el stage anterior
 COPY --from=builder /app/dist ./dist
