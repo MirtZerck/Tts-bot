@@ -1,36 +1,30 @@
 # ============================================================
-# Stage 1: Builder — instala deps y compila TypeScript
+# Stage 1: Builder
 # ============================================================
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# python3/make/g++ para módulos nativos (prism-media, opusscript)
 RUN apk add --no-cache python3 make g++
 
 COPY package.json tsconfig.json ./
 
-RUN npm install --ignore-scripts
+RUN npm install --ignore-scripts --legacy-peer-deps
 
 COPY src/ ./src/
 RUN npm run build
 
 # ============================================================
-# Stage 2: Production — imagen final mínima
+# Stage 2: Production
 # ============================================================
 FROM node:20-alpine AS production
 
 WORKDIR /app
 
-RUN apk add --no-cache \
-    ffmpeg \
-    python3 \
-    make \
-    g++ \
-    && rm -rf /var/cache/apk/*
+RUN apk add --no-cache ffmpeg && rm -rf /var/cache/apk/*
 
 COPY package.json ./
-RUN npm install --omit=dev --ignore-scripts && npm cache clean --force
+RUN npm install --omit=dev --ignore-scripts --legacy-peer-deps && npm cache clean --force
 
 COPY --from=builder /app/dist ./dist
 
